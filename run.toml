@@ -1,0 +1,25 @@
+name = "MapData"
+schemaVersion = 1
+type = "cron"
+schedule        = "CRON_TZ=UTC */20 * * * * *"
+# evmChainID for Sepolia Testnet
+evmChainID = "11155111"
+# Optional External Job ID: Automatically generated if unspecified
+# externalJobID = "b1d42cd5-4a3a-4200-b1f7-25a68e48aad8"
+contractAddress = "0xdADDf21Da7deED677Cd15a0bf29C5BAF2c57818d"
+maxTaskDuration = "0s"
+minIncomingConfirmations = 0
+observationSource = """
+
+    fetch    [type="http" method=GET url="http://host.docker.internal:3005/map"]
+    parse    [type="jsonparse" path="metadata"]
+
+    encode_tx    [type="ethabiencode"
+                  abi="updateBatchMetadata(string[] memory newIpfsHashes)"
+                  data="{\\"newIpfsHashes\\": $(parse)}"
+                  ]
+    submit_tx    [type="ethtx" to="0xdADDf21Da7deED677Cd15a0bf29C5BAF2c57818d" data="$(encode_tx)"]
+
+    fetch -> parse -> encode_tx -> submit_tx
+
+"""
